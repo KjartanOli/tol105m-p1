@@ -8,6 +8,8 @@ let program = null;
 let mouse_start = null;
 let gun_offset = 0;
 
+const origin = vec2(-2, 0);
+
 const shapes = {
 	gun: {
 		width: 0.2,
@@ -33,30 +35,45 @@ const slices = [
 		items: 1,
 		max_items: 1,
 		vertices: [
-			vec2(-(shapes.gun.width / 2),-1),
-			vec2(0,-1 + shapes.gun.height),
-			vec2(shapes.gun.width / 2,-1),
+			[
+				vec2(-(shapes.gun.width / 2),-1),
+				vec2(0,-1 + shapes.gun.height),
+				vec2(shapes.gun.width / 2,-1),
+			]
 		],
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 	{
 		item_vertices: 6,
 		items: 1,
-		max_items: 1,
-		vertices: [
-			...make_rectangle(
-				vec2(-1, 0.7),
-				shapes.bird.width,
-				shapes.bird.height
-			),
-		],
+		max_items: 7,
+		vertices: (() => {
+			const out = [];
+			for (let i = 0; i < 7; ++i)
+				out.push(
+					make_rectangle(
+						origin,
+						shapes.bird.width,
+						shapes.bird.height
+					));
+			return out;
+		})(),
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 	{
 		item_vertices: 6,
 		items: 0,
 		max_items: 5,
-		vertices: [],
+		vertices: (() => {
+			const out = [];
+			for (let i = 0; i < 5; ++i)
+				out.push(make_rectangle(
+					origin,
+					shapes.bullet.width,
+					shapes.bullet.height
+				));
+			return out;
+		})(),
 		colour: vec4(1.0, 0.0, 0.0, 1.0),
 	},
 	{
@@ -68,12 +85,12 @@ const slices = [
 			const bottom = 0.925;
 			const left = -0.95;
 			return [
-				...([0,1,2,3].map(i => make_rectangle(
+				([0,1,2,3].map(i => make_rectangle(
 					vec2(left + i * step_size, bottom),
 					shapes.score.width,
 					shapes.score.height
 				))).flat(),
-				...(() => {
+				(() => {
 					const p1 = vec2(left - step_size / 2, bottom);
 					const p2 = add(p1, vec2(0, shapes.score.width));
 					const p3 = add(p1, vec2(4 * step_size + shapes.score.width, shapes.score.height));
@@ -92,6 +109,7 @@ const slices = [
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	}
 ].reduce((a, s) => {
+	s.offsets = s.vertices.map(_ => vec2(0,0));
 	if (a.length === 0) {
 		s.start = 0;
 		return [s];
@@ -153,12 +171,26 @@ async function init() {
 	slices.forEach(slice => gl.bufferSubData(
 		gl.ARRAY_BUFFER,
 		slice.start * 8,
-		flatten(slice.vertices)
+		flatten(slice.vertices.flat())
 	));
 
 	const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
+
+	const oBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, oBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, total_vertices(slices) * 8, gl.DYNAMIC_DRAW);
+
+	slices.forEach(slice => gl.bufferSubData(
+		gl.ARRAY_BUFFER,
+		slice.start * 8,
+		flatten(expand_offsets(slice))
+	));
+
+	const vOffset = gl.getAttribLocation(program, "vOffset");
+	gl.vertexAttribPointer(vOffset, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(vOffset);
 
 	canvas.addEventListener('mousedown', (event) => {
 		if (event.button === 0) {
@@ -200,11 +232,17 @@ function move_mouse(event) {
 		1 - shapes.gun.width / 2
 	);
 
+	gun.offsets = [vec2(gun_offset, 0)];
+
 	gl.bufferSubData(
 		gl.ARRAY_BUFFER,
 		gun.start,
-		flatten(gun.vertices.map(p => add(p, vec2(gun_offset, 0))))
+		flatten(expand_offsets(gun))
 	);
+}
+
+function expand_offsets(slice) {
+	return slice.vertices.map((v, i) => v.map(_ => slice.offsets[i])).flat();
 }
 
 function clamp(x, min, max) {

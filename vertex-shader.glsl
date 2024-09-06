@@ -1,8 +1,10 @@
 attribute vec4 vPosition;
+attribute vec2 vOffset;
 
 void
 main()
 {
-  gl_PointSize = 1.0;
-  gl_Position = vPosition;
+  vec4 t = vPosition;
+  t.xy += vOffset;
+  gl_Position = t;
 }
