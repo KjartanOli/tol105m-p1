@@ -44,6 +44,7 @@ const slices = [
 
 const gun = slices[0];
 const gun_width = gun.vertices[2][0] - gun.vertices[0][0];
+const gun_height = gun.vertices[1][1] - gun.vertices[0][1];
 
 function make_rectangle(origin, width, height) {
 	return [
@@ -111,7 +112,16 @@ async function init() {
 			canvas.removeEventListener('mousemove', move_mouse);
 	});
 
+	addEventListener('keydown', (event) => {
+		if (event.key === ' ')
+			shoot();
+	});
+
 	render();
+}
+
+function shoot() {
+	console.log(vec2(gun_offset, -1 + gun_height));
 }
 
 function get_cursor_location(event) {
