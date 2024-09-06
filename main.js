@@ -5,6 +5,7 @@ import { get_shader, init_shaders } from './shaders.js';
 let gl = null;
 let program = null;
 let points = 0;
+const min_birds = 2;
 
 let mouse_start = null;
 let gun_offset = 0;
@@ -352,7 +353,8 @@ function add_point() {
 }
 
 function render() {
-	if (birds.items < birds.max_items)
+	if (birds.items < min_birds
+			|| birds.items < birds.max_items && Math.random() < 0.01)
 		add_bird();
 	move_birds();
 	move_bullets();
