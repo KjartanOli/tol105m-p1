@@ -15,6 +15,10 @@ const slices = [
 	},
 ];
 
+function current_vertices(slice) {
+	return slice.item_vertices * slice.items;
+}
+
 function max_vertices(slice) {
 	return slice.item_vertices * slice.max_items;
 }
@@ -44,7 +48,11 @@ async function init() {
 	const vBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, total_vertices(slices) * 8, gl.STATIC_DRAW);
-	gl.bufferSubData(gl.ARRAY_BUFFER, slices[0].start, flatten(slices[0].vertices));
+	slices.forEach(slice => gl.bufferSubData(
+		gl.ARRAY_BUFFER,
+		slice.start,
+		flatten(slice.vertices)
+	));
 
 	const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
@@ -55,7 +63,11 @@ async function init() {
 
 function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(gl.TRIANGLES, 0, 3);
+	slices.forEach(slice => gl.drawArrays(
+		gl.TRIANGLES,
+		slice.start,
+		current_vertices(slice)
+	));
 }
 
 addEventListener('load', init);
