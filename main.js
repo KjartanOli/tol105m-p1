@@ -12,6 +12,7 @@ const slices = [
 		items: 1,
 		max_items: 1,
 		vertices: [vec2(-0.1,-1), vec2(0,-0.95), vec2(0.1,-1)],
+		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 ];
 
@@ -63,11 +64,15 @@ async function init() {
 
 function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	slices.forEach(slice => gl.drawArrays(
-		gl.TRIANGLES,
-		slice.start,
-		current_vertices(slice)
-	));
+	slices.forEach(slice => {
+		const colour = gl.getUniformLocation(program, 'colour');
+		gl.uniform4fv(colour, slice.colour);
+		gl.drawArrays(
+			gl.TRIANGLES,
+			slice.start,
+			current_vertices(slice)
+		)
+	});
 }
 
 addEventListener('load', init);
