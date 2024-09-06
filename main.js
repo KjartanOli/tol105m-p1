@@ -10,6 +10,11 @@ let gun_offset = 0;
 
 const origin = vec2(-2, 0);
 
+const steps = {
+	bird: vec2(0.005, 0),
+	bullet: vec2(0, 0.1),
+};
+
 const shapes = {
 	gun: {
 		width: 0.2,
@@ -45,7 +50,7 @@ const slices = [
 	},
 	{
 		item_vertices: 6,
-		items: 1,
+		items: 0,
 		max_items: 7,
 		vertices: (() => {
 			const out = [];
@@ -59,6 +64,12 @@ const slices = [
 			return out;
 		})(),
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
+		directions: (() => {
+			const out = [];
+			for (let i = 0; i < 7; ++i)
+				out.push(0);
+			return out;
+		}),
 	},
 	{
 		item_vertices: 6,
@@ -122,6 +133,8 @@ const slices = [
 }, []);
 
 const gun = slices[0];
+const birds = slices[1];
+const bullets = slices[2];
 const scorecard = slices[3];
 
 function make_rectangle(origin, width, height) {
@@ -214,6 +227,7 @@ async function init() {
 
 function shoot() {
 	console.log(vec2(gun_offset, -1 + shapes.gun.height));
+	add_bird();
 }
 
 function get_cursor_location(event) {
@@ -249,7 +263,39 @@ function clamp(x, min, max) {
 	return Math.max(Math.min(x, max), min);
 }
 
+function random(min, max) {
+	return min + Math.random() * (max - min);
+}
+
+function add_bird() {
+	const height = random(0.0, 0.9);
+	const side = (Math.random() < 0.5) ? -1 : 1 - shapes.bird.width;
+
+	birds.offsets[birds.items] = subtract(vec2(side, height), origin);
+	birds.directions[birds.items] = vec2(-side, 0);
+	birds.items = birds.items + 1;
+}
+
+function move_birds() {
+	birds.offsets.slice(0, birds.items).forEach((b, i) => {
+		birds.offsets[i] = add(b, mult(birds.directions[i], steps.bird));
+
+		const x = add(origin, b)[0];
+		if (x < (-1 - shapes.bird.width) || x > 1)
+			remove_bird(i);
+	});
+	gl.bufferSubData(gl.ARRAY_BUFFER, birds.start * 8, flatten(expand_offsets(birds)));
+}
+
+function remove_bird(i) {
+	birds.items = birds.items - 1;
+	birds.offsets[i] = birds.offsets[birds.items];
+	birds.directions[i] = birds.directions[birds.items];
+}
+
 function render() {
+	move_birds();
+
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	slices.forEach(slice => {
 		const colour = gl.getUniformLocation(program, 'colour');
