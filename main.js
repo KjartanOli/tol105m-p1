@@ -17,6 +17,14 @@ const slices = [
 		vertices: [vec2(-0.1,-1), vec2(0,-0.95), vec2(0.1,-1)],
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
+	{
+		start: 3,
+		item_vertices: 6,
+		items: 1,
+		max_items: 1,
+		vertices: [...make_rectangle(vec2(-1, 0.7), 0.05, 0.03)],
+		colour: vec4(0.0, 1.0, 0.0, 1.0),
+	},
 ];
 
 const gun = slices[0];
@@ -68,7 +76,7 @@ async function init() {
 	gl.bufferData(gl.ARRAY_BUFFER, total_vertices(slices) * 8, gl.STATIC_DRAW);
 	slices.forEach(slice => gl.bufferSubData(
 		gl.ARRAY_BUFFER,
-		slice.start,
+		slice.start * 8,
 		flatten(slice.vertices)
 	));
 
