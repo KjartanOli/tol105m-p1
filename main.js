@@ -10,7 +10,6 @@ let gun_offset = 0;
 
 const slices = [
 	{
-		start: 0,
 		item_vertices: 3,
 		items: 1,
 		max_items: 1,
@@ -18,14 +17,30 @@ const slices = [
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 	{
-		start: 3,
 		item_vertices: 6,
 		items: 1,
 		max_items: 1,
 		vertices: [...make_rectangle(vec2(-1, 0.7), 0.05, 0.03)],
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
-];
+	{
+		item_vertices: 6,
+		items: 0,
+		max_items: 5,
+		vertices: [],
+		colour: vec4(1.0, 0.0, 0.0, 1.0),
+	}
+].reduce((a, s) => {
+	if (a.length === 0) {
+		s.start = 0;
+		return [s];
+	}
+
+	const last = a[a.length - 1];
+	s.start = last.start + max_vertices(last);
+	a.push(s);
+	return a;
+}, []);
 
 const gun = slices[0];
 const gun_width = gun.vertices[2][0] - gun.vertices[0][0];
