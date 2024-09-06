@@ -8,12 +8,20 @@ let program = null;
 const slices = [
 	{
 		start: 0,
-		item_verticies: 3,
+		item_vertices: 3,
 		items: 1,
 		max_items: 1,
-		verticies: [vec2(-1,-1), vec2(0,1), vec2(1,-1)],
+		vertices: [vec2(-1,-1), vec2(0,1), vec2(1,-1)],
 	},
 ];
+
+function max_vertices(slice) {
+	return slice.item_vertices * slice.max_items;
+}
+
+function total_vertices(slices) {
+	return slices.map(max_vertices).reduce((a, b) => a + b, 0);
+}
 
 const [vertex_shader, fragment_shader] = [
 	'vertex-shader.glsl',
@@ -35,8 +43,8 @@ async function init() {
 
 	const vBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, 3 * 8, gl.STATIC_DRAW);
-	gl.bufferSubData(gl.ARRAY_BUFFER, slices[0].start, flatten(slices[0].verticies));
+	gl.bufferData(gl.ARRAY_BUFFER, total_vertices(slices) * 8, gl.STATIC_DRAW);
+	gl.bufferSubData(gl.ARRAY_BUFFER, slices[0].start, flatten(slices[0].vertices));
 
 	const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
