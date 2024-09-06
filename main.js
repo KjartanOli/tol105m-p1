@@ -5,6 +5,16 @@ import { get_shader, init_shaders } from './shaders.js';
 let gl = null;
 let program = null;
 
+const slices = [
+	{
+		start: 0,
+		item_verticies: 3,
+		items: 1,
+		max_items: 1,
+		verticies: [vec2(-1,-1), vec2(0,1), vec2(1,-1)],
+	},
+];
+
 const [vertex_shader, fragment_shader] = [
 	'vertex-shader.glsl',
 	'fragment-shader.glsl'
@@ -25,7 +35,8 @@ async function init() {
 
 	const vBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, flatten([vec2(-1,-1), vec2(0,1), vec2(1,-1)]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, 3 * 8, gl.STATIC_DRAW);
+	gl.bufferSubData(gl.ARRAY_BUFFER, slices[0].start, flatten(slices[0].verticies));
 
 	const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
