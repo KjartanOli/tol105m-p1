@@ -8,19 +8,44 @@ let program = null;
 let mouse_start = null;
 let gun_offset = 0;
 
+const shapes = {
+	gun: {
+		width: 0.2,
+		height: 0.1,
+	},
+	bird: {
+		width: 0.15,
+		height: 0.07,
+	},
+	bullet: {
+		width: 0.1,
+		height: 0.15,
+	},
+};
+
 const slices = [
 	{
 		item_vertices: 3,
 		items: 1,
 		max_items: 1,
-		vertices: [vec2(-0.1,-1), vec2(0,-0.95), vec2(0.1,-1)],
+		vertices: [
+			vec2(-(shapes.gun.width / 2),-1),
+			vec2(0,-1 + shapes.gun.height),
+			vec2(shapes.gun.width / 2,-1),
+		],
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 	{
 		item_vertices: 6,
 		items: 1,
 		max_items: 1,
-		vertices: [...make_rectangle(vec2(-1, 0.7), 0.05, 0.03)],
+		vertices: [
+			...make_rectangle(
+				vec2(-1, 0.7),
+				shapes.bird.width,
+				shapes.bird.height
+			),
+		],
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 	{
@@ -43,8 +68,6 @@ const slices = [
 }, []);
 
 const gun = slices[0];
-const gun_width = gun.vertices[2][0] - gun.vertices[0][0];
-const gun_height = gun.vertices[1][1] - gun.vertices[0][1];
 
 function make_rectangle(origin, width, height) {
 	return [
@@ -121,7 +144,7 @@ async function init() {
 }
 
 function shoot() {
-	console.log(vec2(gun_offset, -1 + gun_height));
+	console.log(vec2(gun_offset, -1 + shapes.gun.height));
 }
 
 function get_cursor_location(event) {
@@ -136,8 +159,8 @@ function move_mouse(event) {
 	const location = get_cursor_location(event);
 	gun_offset = clamp(
 		location[0] - mouse_start[0],
-		-1 + gun_width / 2,
-		1 - gun_width / 2
+		-1 + shapes.gun.width / 2,
+		1 - shapes.gun.width / 2
 	);
 
 	gl.bufferSubData(
