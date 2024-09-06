@@ -21,6 +21,10 @@ const shapes = {
 		width: 0.1,
 		height: 0.15,
 	},
+	score: {
+		width: 0.005,
+		height: 0.05,
+	},
 };
 
 const slices = [
@@ -54,6 +58,38 @@ const slices = [
 		max_items: 5,
 		vertices: [],
 		colour: vec4(1.0, 0.0, 0.0, 1.0),
+	},
+	{
+		item_vertices: 6,
+		items: 0,
+		max_items: 5,
+		vertices: (() => {
+			const step_size = 0.025;
+			const bottom = 0.925;
+			const left = -0.95;
+			return [
+				...([0,1,2,3].map(i => make_rectangle(
+					vec2(left + i * step_size, bottom),
+					shapes.score.width,
+					shapes.score.height
+				))).flat(),
+				...(() => {
+					const p1 = vec2(left - step_size / 2, bottom);
+					const p2 = add(p1, vec2(0, shapes.score.width));
+					const p3 = add(p1, vec2(4 * step_size + shapes.score.width, shapes.score.height));
+					const p4 = add(p3, vec2(0, -shapes.score.width));
+					return [
+						p1,
+						p2,
+						p3,
+						p3,
+						p4,
+						p1,
+					]
+				})(),
+			];
+		})(),
+		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	}
 ].reduce((a, s) => {
 	if (a.length === 0) {
@@ -68,6 +104,7 @@ const slices = [
 }, []);
 
 const gun = slices[0];
+const scorecard = slices[3];
 
 function make_rectangle(origin, width, height) {
 	return [
@@ -135,7 +172,7 @@ async function init() {
 			canvas.removeEventListener('mousemove', move_mouse);
 	});
 
-	addEventListener('keydown', (event) => {
+	document.addEventListener('keydown', (event) => {
 		if (event.key === ' ')
 			shoot();
 	});
