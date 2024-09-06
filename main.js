@@ -100,14 +100,14 @@ async function init() {
   gl.enableVertexAttribArray(vPosition);
 
 	canvas.addEventListener('mousedown', (event) => {
-		if (event.button == 0) {
+		if (event.button === 0) {
 			mouse_start = get_cursor_location(event);
 			canvas.addEventListener('mousemove', move_mouse);
 		}
 	});
 
 	canvas.addEventListener('mouseup', (event) => {
-		if (event.button == 0)
+		if (event.button === 0)
 			canvas.removeEventListener('mousemove', move_mouse);
 	});
 
