@@ -11,7 +11,7 @@ const slices = [
 		item_vertices: 3,
 		items: 1,
 		max_items: 1,
-		vertices: [vec2(-1,-1), vec2(0,1), vec2(1,-1)],
+		vertices: [vec2(-0.1,-1), vec2(0,-0.95), vec2(0.1,-1)],
 	},
 ];
 
