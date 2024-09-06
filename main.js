@@ -16,6 +16,17 @@ const slices = [
 	},
 ];
 
+function make_rectangle(origin, width, height) {
+	return [
+		origin,
+		add(origin, vec2(width, 0)),
+		add(origin, vec2(0, height)),
+		add(origin, vec2(width, height)),
+		add(origin, vec2(width, 0)),
+		add(origin, vec2(0, height)),
+	];
+}
+
 function current_vertices(slice) {
 	return slice.item_vertices * slice.items;
 }
