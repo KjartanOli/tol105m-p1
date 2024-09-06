@@ -5,6 +5,9 @@ import { get_shader, init_shaders } from './shaders.js';
 let gl = null;
 let program = null;
 
+let mouse_start = null;
+let gun_offset = 0;
+
 const slices = [
 	{
 		start: 0,
@@ -15,6 +18,9 @@ const slices = [
 		colour: vec4(0.0, 1.0, 0.0, 1.0),
 	},
 ];
+
+const gun = slices[0];
+const gun_width = gun.vertices[2][0] - gun.vertices[0][0];
 
 function make_rectangle(origin, width, height) {
 	return [
@@ -70,7 +76,46 @@ async function init() {
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
 
+	canvas.addEventListener('mousedown', (event) => {
+		if (event.button == 0) {
+			mouse_start = get_cursor_location(event);
+			canvas.addEventListener('mousemove', move_mouse);
+		}
+	});
+
+	canvas.addEventListener('mouseup', (event) => {
+		if (event.button == 0)
+			canvas.removeEventListener('mousemove', move_mouse);
+	});
+
 	render();
+}
+
+function get_cursor_location(event) {
+	const canvas = event.target;
+
+	const x = (event.offsetX / canvas.clientWidth) * 2 - 1;
+	const y = -((event.offsetY / canvas.clientHeight) * 2 - 1);
+	return vec2(x, y);
+}
+
+function move_mouse(event) {
+	const location = get_cursor_location(event);
+	gun_offset = clamp(
+		location[0] - mouse_start[0],
+		-1 + gun_width / 2,
+		1 - gun_width / 2
+	);
+
+	gl.bufferSubData(
+		gl.ARRAY_BUFFER,
+		gun.start,
+		flatten(gun.vertices.map(p => add(p, vec2(gun_offset, 0))))
+	);
+}
+
+function clamp(x, min, max) {
+	return Math.max(Math.min(x, max), min);
 }
 
 function render() {
@@ -84,6 +129,8 @@ function render() {
 			current_vertices(slice)
 		)
 	});
+
+	window.requestAnimFrame(render);
 }
 
 addEventListener('load', init);
