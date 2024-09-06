@@ -4,6 +4,7 @@ import { get_shader, init_shaders } from './shaders.js';
 
 let gl = null;
 let program = null;
+let points = 0;
 
 let mouse_start = null;
 let gun_offset = 0;
@@ -12,7 +13,7 @@ const origin = vec2(-2, 0);
 
 const steps = {
 	bird: vec2(0.005, 0),
-	bullet: vec2(0, 0.1),
+	bullet: vec2(0, 0.07),
 };
 
 const shapes = {
@@ -25,8 +26,8 @@ const shapes = {
 		height: 0.07,
 	},
 	bullet: {
-		width: 0.1,
-		height: 0.15,
+		width: 0.05,
+		height: 0.075,
 	},
 	score: {
 		width: 0.005,
@@ -78,11 +79,12 @@ const slices = [
 		vertices: (() => {
 			const out = [];
 			for (let i = 0; i < 5; ++i)
-				out.push(make_rectangle(
-					origin,
-					shapes.bullet.width,
-					shapes.bullet.height
-				));
+				out.push(
+					[
+						add(origin, vec2(-(shapes.bullet.width / 2),-shapes.bullet.height)),
+						origin,
+						add(origin, vec2(shapes.bullet.width / 2, -shapes.bullet.height)),
+					]);
 			return out;
 		})(),
 		colour: vec4(1.0, 0.0, 0.0, 1.0),
@@ -218,7 +220,7 @@ async function init() {
 	});
 
 	document.addEventListener('keydown', (event) => {
-		if (event.key === ' ')
+		if (event.key === ' ' && bullets.items < bullets.max_items)
 			shoot();
 	});
 
@@ -226,8 +228,7 @@ async function init() {
 }
 
 function shoot() {
-	console.log(vec2(gun_offset, -1 + shapes.gun.height));
-	add_bird();
+	add_bullet();
 }
 
 function get_cursor_location(event) {
@@ -276,6 +277,21 @@ function add_bird() {
 	birds.items = birds.items + 1;
 }
 
+function add_bullet() {
+	const offset = subtract(
+		add(
+			gun.offsets[0],
+			vec2(
+				-(shapes.bullet.width / 2),
+				-1 + shapes.gun.height
+			)
+		),
+		origin);
+
+	bullets.offsets[bullets.items] = offset;
+	bullets.items = bullets.items + 1;
+}
+
 function move_birds() {
 	birds.offsets.slice(0, birds.items).forEach((b, i) => {
 		birds.offsets[i] = add(b, mult(birds.directions[i], steps.bird));
@@ -287,14 +303,60 @@ function move_birds() {
 	gl.bufferSubData(gl.ARRAY_BUFFER, birds.start * 8, flatten(expand_offsets(birds)));
 }
 
+function move_bullets() {
+	bullets.offsets.slice(0, bullets.items).forEach((b, i) => {
+		bullets.offsets[i] = add(b, steps.bullet);
+
+		const y = add(origin, b)[1];
+		if (y > (1 + shapes.bullet.height))
+			remove_bullet(i);
+	});
+	gl.bufferSubData(gl.ARRAY_BUFFER, bullets.start * 8, flatten(expand_offsets(bullets)));
+}
+
 function remove_bird(i) {
 	birds.items = birds.items - 1;
 	birds.offsets[i] = birds.offsets[birds.items];
 	birds.directions[i] = birds.directions[birds.items];
 }
 
+function remove_bullet(i) {
+	bullets.items = bullets.items - 1;
+	bullets.offsets[i] = bullets.offsets[bullets.items];
+}
+
+function check_hits() {
+	for (let i = 0; i < bullets.items; ++i) {
+		const offset = bullets.offsets[i];
+		const p = add(offset, bullets.vertices[i][1]);
+		for (let j = 0; j < birds.items; ++j) {
+			const offset = birds.offsets[j];
+			const p1 = add(offset, birds.vertices[j][0]);
+			const p2 = add(offset, birds.vertices[j][3]);
+
+			if (p[0] > p1[0] && p[0] < p2[0] && p[1] > p1[1] && p[1] < p2[1]) {
+				remove_bullet(i);
+				remove_bird(j);
+				add_point();
+				break;
+			}
+		}
+	}
+}
+
+function add_point() {
+	points = points + 1;
+	scorecard.items = points % (scorecard.max_items + 1);
+	if (points % (scorecard.max_items + 1) === 0)
+		steps.bird = add(steps.bird, vec2(0.001, 0));
+}
+
 function render() {
+	if (birds.items < birds.max_items)
+		add_bird();
 	move_birds();
+	move_bullets();
+	check_hits();
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	slices.forEach(slice => {
