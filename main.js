@@ -8,7 +8,6 @@ let points = 0;
 const min_birds = 2;
 
 let mouse_start = null;
-let gun_offset = 0;
 
 const origin = vec2(-2, 0);
 
@@ -242,7 +241,7 @@ function get_cursor_location(event) {
 
 function move_mouse(event) {
 	const location = get_cursor_location(event);
-	gun_offset = clamp(
+	const gun_offset = clamp(
 		location[0] - mouse_start[0],
 		-1 + shapes.gun.width / 2,
 		1 - shapes.gun.width / 2
