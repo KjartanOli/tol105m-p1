@@ -1,0 +1,12 @@
+html {
+    box-model: border-box;
+}
+main {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1000px;
+}
+
+canvas {
+    border: 1px solid black;
+}
