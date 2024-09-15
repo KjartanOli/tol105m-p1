@@ -271,9 +271,10 @@ function random(min, max) {
 function add_bird() {
 	const height = random(0.0, 0.9);
 	const side = (Math.random() < 0.5) ? -1 : 1 - shapes.bird.width;
+	const speed = Math.random() + 1;
 
 	birds.offsets[birds.items] = subtract(vec2(side, height), origin);
-	birds.directions[birds.items] = vec2(-side, 0);
+	birds.directions[birds.items] = vec2(-side * speed, 0);
 	birds.items = birds.items + 1;
 }
 
