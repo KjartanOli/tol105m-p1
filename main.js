@@ -47,7 +47,7 @@ const slices = [
 				vec2(shapes.gun.width / 2,-1),
 			]
 		],
-		colour: vec4(0.0, 1.0, 0.0, 1.0),
+		colour: vec4(0.45, 0.45, 0.45, 1.0),
 	},
 	{
 		item_vertices: 6,
