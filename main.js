@@ -327,22 +327,29 @@ function remove_bullet(i) {
 }
 
 function check_hits() {
+	const bi = [];
+	const bu = [];
 	for (let i = 0; i < bullets.items; ++i) {
-		const offset = bullets.offsets[i];
-		const p = add(offset, bullets.vertices[i][1]);
 		for (let j = 0; j < birds.items; ++j) {
-			const offset = birds.offsets[j];
-			const p1 = add(offset, birds.vertices[j][0]);
-			const p2 = add(offset, birds.vertices[j][3]);
-
-			if (p[0] > p1[0] && p[0] < p2[0] && p[1] > p1[1] && p[1] < p2[1]) {
-				remove_bullet(i);
-				remove_bird(j);
+			if (hits_bird(i, j)) {
+				bu.push(i);
+				bi.push(j);
 				add_point();
 				break;
 			}
 		}
 	}
+
+	bi.forEach(remove_bird);
+	bu.forEach(remove_bullet);
+}
+
+function hits_bird(bullet, bird) {
+	const p = add(bullets.offsets[bullet], bullets.vertices[bullet][1]);
+	const p1 = add(birds.offsets[bird], birds.vertices[bird][0]);
+	const p2 = add(birds.offsets[bird], birds.vertices[bird][3]);
+
+	return (p[0] > p1[0] && p[0] < p2[0] && p[1] > p1[1] && p[1] < p2[1]);
 }
 
 function add_point() {
