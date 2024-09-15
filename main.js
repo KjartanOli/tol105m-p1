@@ -18,7 +18,7 @@ const steps = {
 
 const shapes = {
 	gun: {
-		width: 0.2,
+		width: 0.1,
 		height: 0.1,
 	},
 	bird: {
