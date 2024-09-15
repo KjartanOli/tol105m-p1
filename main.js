@@ -26,8 +26,8 @@ const shapes = {
 		height: 0.07,
 	},
 	bullet: {
-		width: 0.05,
-		height: 0.075,
+		width: 0.020,
+		height: 0.08,
 	},
 	score: {
 		width: 0.005,
